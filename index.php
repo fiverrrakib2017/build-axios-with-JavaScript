@@ -11,6 +11,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" ></script>
+
+
+    <!-- Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+
+    <!-- Daterangepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css" />
+
 </head>
 
 <body>
@@ -19,11 +32,21 @@
             <div class="col-md-12 m-auto">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Bill from advance money</h3>
+                       
+                        <div class="row">
+                            <h3 class="card-title col-4 mt-1">Transaction List by Expense</h3>
+                                <div class="col-4 nav justify-content-end">
+                            <div class="form-group mx-sm-3 mb-2">
+                                <label for="trx_search" class="sr-only">Search by trx</label>
+                                <input type="search" class="form-control" id="trx_search" placeholder="Search by trx">
+                            </div>
+                            </div>
+                            <div class="col-4 nav justify-content-end" id="export_buttonscc"></div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            
+
                         <table id="load_data" class="table table-striped table-bordered responsive display no-wrap" style="width: 100%">
                             <thead>
                                 <tr>
@@ -46,64 +69,167 @@
             </div>
         </div>
     </div>
-
 <script type="text/javascript">
-   
+   <?php
+$conn = new mysqli("localhost", "root", "", "test");
+$price_filter = '';
+if ($__all__product_data = $conn->query("SELECT * FROM service_product")) {
+    while ($rows = $__all__product_data->fetch_assoc()) {
+        $price_filter .= '<option value="' . $rows['price'] . '">' . $rows['price'] . '</option>';
+    }
+}
+
+$__product_name_filter = '';
+if ($__all__product_name = $conn->query("SELECT * FROM service_product")) {
+    while ($rowss = $__all__product_name->fetch_assoc()) {
+        $__product_name_filter .= '<option value="' . $rowss['product_name'] . '">' . $rowss['product_name'] . '</option>';
+    }
+}
+
+?>
+    var table;
     $(document).ready(function() {
-      var  status_filter='<label style="margin-left: 10px;"> ';
-   // var status_filter = '<label style="margin-left: 10px;"> Status: ';
-    status_filter += '<select class="status_filter custom-select-sm form-control form-control-sm select2">';
-    status_filter += '<option value="">--select--</option>';
-    status_filter += '<option value="0">Pending</option>';
-    status_filter += '<option value="1">Approved</option>';
-    status_filter += '<option value="2">Reject</option>';
-    status_filter += '</select></label>';
-    
-
-    status_filter += '<label style="margin-left: 10px;"> Adjustment: ';
-    status_filter += '<select class="adjustment_filter custom-select-sm form-control form-control-sm select2">';
-    status_filter += '<option value="">--select--</option>';
-    status_filter += '<option value="0">Due (Accounts pay)</option>';
-    status_filter += '<option value="1">Advance Money</option>';
-    status_filter += '<option value="2">Petty Cash</option>';
-    status_filter += '<option value="3">Received View</option>';
+        
+    var status_filter = '<label style="margin-left: 10px;">: ';
+    status_filter += '<select class="product_filter custom-select-sm form-control form-control-sm select2">';
+    status_filter += '<option value="">--Select Product Name--</option>';
+    status_filter += '<?=$__product_name_filter;?>';
     status_filter += '</select></label>';
 
-    // status_filter += '<label style="margin-left: 10px;"> Branch: ';
-    // status_filter += '<select class="branch_filter custom-select-sm form-control form-control-sm select2">';
-    // status_filter += '<option value="">--select--</option>';
-    // status_filter += '<option value="">Something else</option>';
-    // status_filter += '</select></label>';
 
-    // status_filter += '<label style="margin-left: 10px;"> Vendor: ';
-    // status_filter += '<select id="myInputTextField" class="custom-select-sm form-control form-control-sm select2">';
-    // status_filter += '<option value="">--select--</option>';
-    // status_filter += '<option value="">Something else</option>';
-    // status_filter += '</select></label>';
+    status_filter += '<label style="margin-left: 10px;"> Price: ';
+    status_filter += '<select class="price_filter custom-select-sm form-control form-control-sm select2">';
+    status_filter += '<option value="">--select--</option>';
+    status_filter += '<?=$price_filter;?>';
+    status_filter += '</select></label>';
 
-    // status_filter += '<label style="margin-left: 10px;"> Date: ';
-    // status_filter += '<div id="reportrange" class="form-control d-inline" style="background: #fff; cursor: pointer; padding: 5px 5px; border: 1px solid #ccc;">';
-    // status_filter += '<i class="fa fa-calendar"></i>&nbsp;';
-    // status_filter += '<span></span> <i class="fa fa-caret-down"></i>';
-    // status_filter += '</div></label>';
+
+    status_filter += '<label style="margin-left: 10px;">';
+    status_filter += '<div id="reportrange" class="form-control d-inline" style="background: #fff; cursor: pointer; padding: 5px 5px; border: 1px solid #ccc;">';
+    status_filter += '<i class="fa fa-calendar"></i>&nbsp;';
+    status_filter += '<span></span> <i class="fa fa-caret-down"></i>';
+    status_filter += '</div></label>';
+
+
     setTimeout(() => {
       $('.dataTables_length').append(status_filter);
       $('.select2').select2();
     }, 500);
-        $('#load_data').DataTable( {      
+         table=$('#load_data').DataTable( {
             "searching": true,
-            "paging": true, 
-            "info": false,         
+            "paging": true,
+            "info": false,
             "lengthChange":true ,
             "processing"		: false,
 			"serverSide"		: true,
+            "zeroRecords":    "No matching records found",
             "ajax"				: {
 				url			: "./Config.php",
-				type		: 'GET',	
+				type		: 'GET',
 			},
+            "buttons": [			
+        {
+            extend: 'copy',
+            text: '<i class="fas fa-copy"></i> Copy',
+            titleAttr: 'Copy',
+            exportOptions: { columns: ':visible' }
+        }, 
+        {
+            extend: 'excel',
+            text: '<i class="fas fa-file-excel"></i> Excel',
+            titleAttr: 'Excel',
+            exportOptions: { columns: ':visible' }
+        }, 
+        {
+            extend: 'csv',
+            text: '<i class="fas fa-file-csv"></i> CSV',
+            titleAttr: 'CSV',
+            exportOptions: { columns: ':visible' }
+        }, 
+        {
+            extend: 'pdf',
+            exportOptions: { columns: ':visible' },
+            orientation: 'landscape',
+            pageSize: "LEGAL",
+            text: '<i class="fas fa-file-pdf"></i> PDF',
+            titleAttr: 'PDF'
+        }, 
+        {
+            extend: 'print',
+            text: '<i class="fas fa-print"></i> Print',
+            titleAttr: 'Print',
+            exportOptions: { columns: ':visible' }
+        }, 
+        {
+            extend: 'colvis',
+            text: '<i class="fas fa-list"></i> Column Visibility',
+            titleAttr: 'Column Visibility'
+        }
+    ],
         });
-    });   
-</script>
+
+        //table.buttons().container().appendTo($('#export_buttonscc'));	
+    });
+
+    /*--------------Filter Script------------------------------------*/
    
+    // Product filter change event
+    $(document).on('change','.price_filter, .product_filter',function(){
+      
+        var product_filter = $('.product_filter').val() == null ? '' : $('.product_filter').val();
+        var price_filter = $('.price_filter').val() == null ? '' : $('.price_filter').val();
+
+        table.columns(0).search(product_filter).draw();
+        table.columns(2).search(price_filter).draw();
+        
+    });
+
+    setTimeout(() => {
+    
+    $(function() {
+        var start = moment().subtract(29, 'days');
+        var end = moment().add(1, 'days');
+
+        function cb(start, end) {
+            $('#reportrange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
+            $('.dateClass').text('From '+start.format('MMM D, YYYY')+' To '+end.format('MMM D, YYYY'));
+            time_filter(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+        }
+        $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
+            var start = picker.startDate.format('YYYY-MM-DD');
+            var end = picker.endDate.format('YYYY-MM-DD');
+
+            table.columns(3).search(start + ' to ' + end).draw();
+        });
+
+        $('#reportrange').daterangepicker({
+            "showDropdowns": true,
+            startDate: start,
+            endDate: end,
+            ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, cb);
+
+        cb(start, end);
+
+    });
+  
+  }, 1000);
+
+
+  function time_filter(start,end){
+    //var ajax_data = "./Filter.php?get-data-table=active&sdate="+start+"&edate="+end;
+    //$('#myTable').DataTable().ajax.url(ajax_data).load();
+    console.log(start,end);
+  }
+
+</script>
+
 </body>
 </html>
