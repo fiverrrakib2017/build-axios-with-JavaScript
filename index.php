@@ -15,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js" ></script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" />
 
     <!-- Moment.js -->
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
@@ -23,6 +23,7 @@
     <!-- Daterangepicker -->
     <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css" />
+    <title>Data Table With Filter </title>
 
 </head>
 
@@ -37,8 +38,7 @@
                             <h3 class="card-title col-4 mt-1">Transaction List by Expense</h3>
                                 <div class="col-4 nav justify-content-end">
                             <div class="form-group mx-sm-3 mb-2">
-                                <label for="trx_search" class="sr-only">Search by trx</label>
-                                <input type="search" class="form-control" id="trx_search" placeholder="Search by trx">
+                               <button data-toggle="modal" data-target="#addModal" class="btn btn-primary">Add Product</button>
                             </div>
                             </div>
                             <div class="col-4 nav justify-content-end" id="export_buttonscc"></div>
@@ -69,6 +69,48 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"  aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+                </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label  class="col-form-label">Product Name:</label>
+                        <input type="text" class="form-control" name="product_name" placeholder="Enter Product Name">
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-form-label">Image Link:</label>
+                        <input type="text" class="form-control" name="product_image" placeholder="Enter Product Image Link">
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-form-label">Price:</label>
+                        <input type="text" class="form-control" name="product_price" placeholder="Enter Product Price ">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                <button type="button" id="addProductBtn" class="btn btn-primary">Add Product</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script type="text/javascript">
    <?php
 $conn = new mysqli("localhost", "root", "", "test");
@@ -165,7 +207,7 @@ if ($__all__product_name = $conn->query("SELECT * FROM service_product")) {
             text: '<i class="fas fa-list"></i> Column Visibility',
             titleAttr: 'Column Visibility'
         }
-    ],
+        ],
         });
 
         //table.buttons().container().appendTo($('#export_buttonscc'));	
@@ -214,11 +256,77 @@ if ($__all__product_name = $conn->query("SELECT * FROM service_product")) {
     });
   
   }, 1000);
-  
+
   function time_filter(start,end){
     var ajax_data = "./Config.php?get-data-table=active&sdate="+start+"&edate="+end;
     $('#load_data').DataTable().ajax.url(ajax_data).load();
   }
+
+  $(document).on('click','.deleteBtn',function(){
+    if(confirm('Are You sure')){
+        var id=$(this).data('id');
+        if(id !=''){
+            $.ajax({  
+				url:"Filter.php",  
+				method:"POST",  
+				data:{delete_id:id},
+				beforeSend:function(){		
+                    //$('.deleteBtn').html('https://i.gifer.com/ZKZg.gif')	;		
+										 
+				},
+				success:function(data){	
+                    if (data==1) {
+                        toastr.success('Delete Success!!!');
+                        $('#load_data').DataTable().ajax.reload( null , false);
+                    }else{
+                        toastr.error('something else');
+                    }
+                    
+				}  
+			});	
+           
+        }
+    }     
+  });
+
+    // Add Product button click event
+    $('#addProductBtn').on('click', function () {
+        var productName = $('input[name="product_name"]').val();
+        var productImage = $('input[name="product_image"]').val();
+        var productPrice = $('input[name="product_price"]').val();
+
+        // Validate the form fields
+        if (productName === '' || productImage === '' || productPrice === '') {
+            toastr.error('Please fill in all the fields.');
+            return;
+        }
+
+        // Send data to the server
+        $.ajax({
+            url: 'addProduct.php', // Replace with the actual path to your PHP file
+            method: 'POST',
+            data: {
+                product_name: productName,
+                product_image: productImage,
+                product_price: productPrice
+            },
+            success: function (data) {
+                if (data === 'success') {
+                    toastr.success('Product added successfully!');
+                    // Optionally, you can reload the DataTable after adding a product
+                    $('#load_data').DataTable().ajax.reload(null, false);
+                    // Clear the form fields
+                    $('input[name="product_name"]').val('');
+                    $('input[name="product_image"]').val('');
+                    $('input[name="product_price"]').val('');
+                    // Close the modal if needed
+                    $('#addModal').modal('hide');
+                } else {
+                    toastr.error('Failed to add product. Please try again.');
+                }
+            }
+        });
+    });
 
 </script>
 

@@ -30,7 +30,7 @@ $columns = array(
         'db'        => 'id',
         'dt'        => 4,
         'formatter' => function( $d, $row ) {
-            return '<a href="edit.php?id='.$d.'">Edit</a> | <a onclick="confirm("Are You Sure");" href="delete.php?id='.$d.'">Delete</a>';
+            return '<a href="edit.php?id='.$d.'">Edit</a> | <button type="button" class="btn btn-danger deleteBtn" data-id="'.$d.'">Delete</button>';
         }
     )
    
