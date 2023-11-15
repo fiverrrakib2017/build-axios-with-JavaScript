@@ -195,13 +195,6 @@ if ($__all__product_name = $conn->query("SELECT * FROM service_product")) {
             $('.dateClass').text('From '+start.format('MMM D, YYYY')+' To '+end.format('MMM D, YYYY'));
             time_filter(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
         }
-        $('#reportrange').on('apply.daterangepicker', function (ev, picker) {
-            var start = picker.startDate.format('YYYY-MM-DD');
-            var end = picker.endDate.format('YYYY-MM-DD');
-
-            table.columns(3).search(start + ' to ' + end).draw();
-        });
-
         $('#reportrange').daterangepicker({
             "showDropdowns": true,
             startDate: start,
@@ -221,12 +214,10 @@ if ($__all__product_name = $conn->query("SELECT * FROM service_product")) {
     });
   
   }, 1000);
-
-
+  
   function time_filter(start,end){
-    //var ajax_data = "./Filter.php?get-data-table=active&sdate="+start+"&edate="+end;
-    //$('#myTable').DataTable().ajax.url(ajax_data).load();
-    console.log(start,end);
+    var ajax_data = "./Config.php?get-data-table=active&sdate="+start+"&edate="+end;
+    $('#load_data').DataTable().ajax.url(ajax_data).load();
   }
 
 </script>
